@@ -9,12 +9,10 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Button,
-  Grid,
-  Autocomplete,
   TextField,
 } from "@mui/material";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
@@ -112,6 +110,14 @@ function App() {
     setEditCell({ date: null, member: null });
   };
 
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    const reordered = Array.from(team);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setTeam(reordered);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -127,66 +133,11 @@ function App() {
           maxWidth={false}
           sx={{ mt: 4, width: "100vw", maxWidth: "100vw", p: 0 }}
         >
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <Autocomplete
-                options={team}
-                value={selectedMember}
-                onChange={(_, value) => setSelectedMember(value)}
-                renderInput={(params) => (
-                  <TextField {...params} label="Teammitglied" />
-                )}
-                disableClearable
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="shift-select-label">
-                  Schicht auswählen
-                </InputLabel>
-                <Select
-                  labelId="shift-select-label"
-                  value={selectedShift}
-                  label="Schicht auswählen"
-                  onChange={(e) => setSelectedShift(e.target.value)}
-                >
-                  {shiftList.map((shift, idx) => (
-                    <MenuItem key={shift.value} value={shift.value}>
-                      {shift.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ display: "flex", mt: 2 }}>
-                <FormControl fullWidth>
-                  <InputLabel htmlFor="custom-shift">Eigene Schicht</InputLabel>
-                  <input
-                    id="custom-shift"
-                    type="text"
-                    value={customShift}
-                    onChange={(e) => setCustomShift(e.target.value)}
-                    placeholder="z.B. 10:00 bis 15:00"
-                    style={{
-                      padding: 8,
-                      fontSize: 16,
-                      width: "100%",
-                      borderRadius: 4,
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </FormControl>
-                <Button
-                  variant="contained"
-                  sx={{ ml: 2 }}
-                  onClick={handleAddCustomShift}
-                >
-                  Hinzufügen
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ mr: 2 }}>
+              Team-Reihenfolge: (per Drag & Drop Spaltenkopf)
+            </Typography>
+          </Box>
           <Box
             sx={{
               border: "1px solid #ddd",
@@ -228,30 +179,18 @@ function App() {
                 Diese Woche
               </Button>
             </Box>
-            <Box
-              component="table"
-              sx={{
-                minWidth: team.length * 140 + 120,
-                borderCollapse: "collapse",
-              }}
-            >
-              <Box component="thead">
-                <Box component="tr">
-                  <Box
-                    component="th"
-                    sx={{
-                      border: "1px solid #ccc",
-                      p: 1,
-                      minWidth: 120,
-                      bgcolor: "#f0f0f0",
-                    }}
-                  >
-                    Datum
-                  </Box>
-                  {team.map((member) => (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Box
+                component="table"
+                sx={{
+                  minWidth: team.length * 140 + 120,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <Box component="thead">
+                  <Box component="tr">
                     <Box
                       component="th"
-                      key={member}
                       sx={{
                         border: "1px solid #ccc",
                         p: 1,
@@ -259,130 +198,216 @@ function App() {
                         bgcolor: "#f0f0f0",
                       }}
                     >
-                      {member}
+                      Datum
                     </Box>
-                  ))}
-                </Box>
-              </Box>
-              <Box component="tbody">
-                {weekDates.map((date, idx) => (
-                  <Box component="tr" key={date.format("YYYY-MM-DD")}>
-                    <Box
-                      component="td"
-                      sx={{
-                        border: "1px solid #ccc",
-                        p: 1,
-                        fontWeight: 600,
-                        bgcolor: "#f9f9f9",
-                        minWidth: 160,
-                      }}
+                    <Droppable
+                      droppableId="team-droppable"
+                      direction="horizontal"
                     >
-                      {germanWeekdays[idx]}, {date.format("DD.MM.YYYY")}
-                    </Box>
-                    {team.map((member) => {
-                      const isEditing =
-                        editCell.date === date.format("YYYY-MM-DD") &&
-                        editCell.member === member;
-                      const shiftValue = getShift(date, member);
-                      return (
-                        <Box
-                          component="td"
-                          key={member}
-                          sx={{
-                            border: "1px solid #ccc",
-                            p: 1,
-                            textAlign: "center",
-                            bgcolor: isEditing ? "#e3f2fd" : undefined,
-                          }}
-                        >
-                          {isEditing ? (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              <FormControl size="small" sx={{ minWidth: 120 }}>
-                                <Select
-                                  value={shiftValue || ""}
-                                  onChange={(e) =>
-                                    setShift(date, member, e.target.value)
-                                  }
-                                  displayEmpty
+                      {(provided) => [
+                        ...team.map((member, idx) => (
+                          <Draggable
+                            key={member}
+                            draggableId={member}
+                            index={idx}
+                          >
+                            {(provided, snapshot) => (
+                              <Box
+                                component="th"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                sx={{
+                                  border: "1px solid #ccc",
+                                  p: 1,
+                                  minWidth: 120,
+                                  bgcolor: snapshot.isDragging
+                                    ? "#e0e0e0"
+                                    : "#f0f0f0",
+                                  cursor: "grab",
+                                }}
+                              >
+                                {member}
+                              </Box>
+                            )}
+                          </Draggable>
+                        )),
+                        provided.placeholder,
+                      ]}
+                    </Droppable>
+                  </Box>
+                </Box>
+                <Box component="tbody">
+                  {weekDates.map((date, idx) => (
+                    <Box component="tr" key={date.format("YYYY-MM-DD")}>
+                      <Box
+                        component="td"
+                        sx={{
+                          border: "1px solid #ccc",
+                          p: 1,
+                          fontWeight: 600,
+                          bgcolor: "#f9f9f9",
+                          minWidth: 160,
+                        }}
+                      >
+                        {germanWeekdays[idx]}, {date.format("DD.MM.YYYY")}
+                      </Box>
+                      {team.map((member) => {
+                        const isEditing =
+                          editCell.date === date.format("YYYY-MM-DD") &&
+                          editCell.member === member;
+                        const shiftValue = getShift(date, member);
+                        return (
+                          <Box
+                            key={member}
+                            component="td"
+                            sx={{
+                              border: "1px solid #ccc",
+                              p: 1,
+                              minWidth: 120,
+                              maxWidth: 140,
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {isEditing ? (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <FormControl
+                                  size="small"
+                                  sx={{ minWidth: 100 }}
                                 >
-                                  <MenuItem value="">
-                                    <em>Keine</em>
-                                  </MenuItem>
-                                  {shiftList.map((shift) => (
-                                    <MenuItem
-                                      key={shift.value}
-                                      value={shift.value}
-                                    >
-                                      {shift.label}
+                                  <Select
+                                    value={
+                                      shiftList.some(
+                                        (s) => s.value === shiftValue,
+                                      )
+                                        ? shiftValue
+                                        : shiftValue
+                                          ? "__custom__"
+                                          : ""
+                                    }
+                                    onChange={(e) => {
+                                      if (e.target.value === "__custom__") {
+                                        setShift(date, member, "");
+                                      } else {
+                                        setShift(date, member, e.target.value);
+                                      }
+                                    }}
+                                    displayEmpty
+                                  >
+                                    <MenuItem value="">
+                                      <em>Keine</em>
                                     </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                              <Button
-                                color="error"
-                                size="small"
-                                onClick={() => deleteShift(date, member)}
-                              >
-                                Löschen
-                              </Button>
-                              <Button
-                                size="small"
-                                onClick={() =>
-                                  setEditCell({ date: null, member: null })
-                                }
-                              >
-                                Abbrechen
-                              </Button>
-                            </Box>
-                          ) : (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: 1,
-                              }}
-                            >
-                              <Typography
-                                sx={{ flexGrow: 1, cursor: "pointer" }}
-                                onClick={() =>
-                                  setEditCell({
-                                    date: date.format("YYYY-MM-DD"),
-                                    member,
-                                  })
-                                }
-                              >
-                                {shiftValue ? (
-                                  shiftList.find((s) => s.value === shiftValue)
-                                    ?.label
-                                ) : (
-                                  <span style={{ color: "#bbb" }}>–</span>
-                                )}
-                              </Typography>
-                              {shiftValue && (
+                                    {shiftList.map((shift) => (
+                                      <MenuItem
+                                        key={shift.value}
+                                        value={shift.value}
+                                      >
+                                        {shift.label}
+                                      </MenuItem>
+                                    ))}
+                                    <MenuItem value="__custom__">
+                                      Eigene Schicht...
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                                {/* Custom shift input if needed */}
+                                {!shiftList.some(
+                                  (s) => s.value === shiftValue,
+                                ) &&
+                                (shiftValue ||
+                                  (editCell.date ===
+                                    date.format("YYYY-MM-DD") &&
+                                    editCell.member === member)) ? (
+                                  <TextField
+                                    size="small"
+                                    value={shiftValue}
+                                    onChange={(e) =>
+                                      setShift(date, member, e.target.value)
+                                    }
+                                    placeholder="Eigene Schicht"
+                                    sx={{ minWidth: 80 }}
+                                    autoFocus
+                                  />
+                                ) : null}
                                 <Button
                                   color="error"
                                   size="small"
                                   onClick={() => deleteShift(date, member)}
+                                  sx={{ minWidth: 0, px: 1 }}
                                 >
-                                  Löschen
+                                  ×
                                 </Button>
-                              )}
-                            </Box>
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                ))}
+                                <Button
+                                  size="small"
+                                  onClick={() =>
+                                    setEditCell({ date: null, member: null })
+                                  }
+                                  sx={{ minWidth: 0, px: 1 }}
+                                >
+                                  ✓
+                                </Button>
+                              </Box>
+                            ) : (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                  width: "100%",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    flexGrow: 1,
+                                    cursor: "pointer",
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                  onClick={() =>
+                                    setEditCell({
+                                      date: date.format("YYYY-MM-DD"),
+                                      member,
+                                    })
+                                  }
+                                >
+                                  {shiftValue ? (
+                                    shiftList.find(
+                                      (s) => s.value === shiftValue,
+                                    )?.label || shiftValue
+                                  ) : (
+                                    <span style={{ color: "#bbb" }}>–</span>
+                                  )}
+                                </Typography>
+                                {shiftValue && (
+                                  <Button
+                                    color="error"
+                                    size="small"
+                                    onClick={() => deleteShift(date, member)}
+                                    sx={{ minWidth: 0, px: 1 }}
+                                  >
+                                    ×
+                                  </Button>
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  ))}
+                </Box>
               </Box>
-            </Box>
+            </DragDropContext>
           </Box>
         </Container>
       </LocalizationProvider>
