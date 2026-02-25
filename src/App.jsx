@@ -24,11 +24,31 @@ moment.locale("de");
 
 const theme = createTheme({});
 
+// Helper to format shift values as HH:mm-HH:mm
+function formatShiftValue(val) {
+  // Accepts formats like "8-16", "9_30-18", "08:00-16:00", etc.
+  if (!val) return "";
+  // If already in HH:mm-HH:mm, return as is
+  if (/^\d{2}:\d{2}-\d{2}:\d{2}$/.test(val)) return val;
+  // Parse e.g. 8-16, 9_30-18, 8-9_30, 16-18
+  const [start, end] = val.split("-");
+  function parseTime(t) {
+    if (!t) return "";
+    if (t.includes(":")) return t.padStart(5, "0");
+    if (t.includes("_")) {
+      const [h, m] = t.split("_");
+      return `${h.padStart(2, "0")}:${m.padEnd(2, "0")}`;
+    }
+    return `${t.padStart(2, "0")}:00`;
+  }
+  return `${parseTime(start)}-${parseTime(end)}`;
+}
+
 const defaultShifts = [
-  { label: "08:00 bis 16:00", value: "8-16" },
-  { label: "09:30 bis 18:00", value: "9_30-18" },
-  { label: "08:00 bis 09:30", value: "8-9_30" },
-  { label: "16:00 bis 18:00", value: "16-18" },
+  { label: "08:00-16:00", value: "8-16" },
+  { label: "09:30-18:00", value: "9_30-18" },
+  { label: "08:00-09:30", value: "8-9_30" },
+  { label: "16:00-18:00", value: "16-18" },
 ];
 
 const defaultTeam = [
@@ -183,7 +203,7 @@ function App() {
               <Box
                 component="table"
                 sx={{
-                  minWidth: team.length * 140 + 120,
+                  minWidth: team.length * 160 + 120,
                   borderCollapse: "collapse",
                 }}
               >
@@ -194,8 +214,9 @@ function App() {
                       sx={{
                         border: "1px solid #ccc",
                         p: 1,
-                        minWidth: 120,
+                        minWidth: 140,
                         bgcolor: "#f0f0f0",
+                        height: 48,
                       }}
                     >
                       Datum
@@ -220,11 +241,12 @@ function App() {
                                 sx={{
                                   border: "1px solid #ccc",
                                   p: 1,
-                                  minWidth: 120,
+                                  minWidth: 140,
                                   bgcolor: snapshot.isDragging
                                     ? "#e0e0e0"
                                     : "#f0f0f0",
                                   cursor: "grab",
+                                  height: 48,
                                 }}
                               >
                                 {member}
@@ -248,6 +270,7 @@ function App() {
                           fontWeight: 600,
                           bgcolor: "#f9f9f9",
                           minWidth: 160,
+                          height: 44,
                         }}
                       >
                         {germanWeekdays[idx]}, {date.format("DD.MM.YYYY")}
@@ -264,11 +287,12 @@ function App() {
                             sx={{
                               border: "1px solid #ccc",
                               p: 1,
-                              minWidth: 120,
-                              maxWidth: 140,
+                              minWidth: 140,
+                              maxWidth: 160,
                               overflow: "hidden",
                               whiteSpace: "nowrap",
                               textOverflow: "ellipsis",
+                              height: 44,
                             }}
                           >
                             {isEditing ? (
@@ -381,9 +405,11 @@ function App() {
                                   }
                                 >
                                   {shiftValue ? (
-                                    shiftList.find(
-                                      (s) => s.value === shiftValue,
-                                    )?.label || shiftValue
+                                    formatShiftValue(
+                                      shiftList.find(
+                                        (s) => s.value === shiftValue,
+                                      )?.value || shiftValue,
+                                    )
                                   ) : (
                                     <span style={{ color: "#bbb" }}>–</span>
                                   )}
