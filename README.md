@@ -1,16 +1,43 @@
-# React + Vite
+# Team Schichtplaner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ein moderner, responsiver Schichtplaner für Teams. Die App ermöglicht das einfache Verwalten, Bearbeiten und Anzeigen von Schichtplänen in einer übersichtlichen Tabellenansicht. Unterstützt Drag-and-Drop für Teammitglieder, individuelle Schichteingaben und ist komplett auf Deutsch lokalisiert.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Übersichtliche, moderne Oberfläche
+- Drag-and-Drop für Teammitglieder
+- Schichten bearbeiten, hinzufügen und löschen
+- Individuelle Schichteingabe pro Tag und Person
+- Deutsche Wochentage und Datumsformate
+- Dunkles, modernes Design
 
-## React Compiler
+## Schnellstart
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Um die App auf einem anderen Computer mit Zugriff auf das GitHub-Repository auszuführen:
 
-## Expanding the ESLint configuration
+1. **Node.js installieren**  
+   Lade Node.js von [nodejs.org](https://nodejs.org/) herunter und installiere es (npm ist enthalten).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. **Repository klonen**  
+   Öffne ein Terminal und führe aus:
+
+   ```bash
+   git clone https://github.com/your-username/your-repo-name.git
+   cd your-repo-name/shift-scheduler
+   ```
+
+3. **Abhängigkeiten installieren**
+
+   ```bash
+   npm install
+   ```
+
+4. **Entwicklungsserver starten**
+   ```bash
+   npm run dev
+   ```
+   Die App ist dann unter http://localhost:5173/ im Browser erreichbar.
+
+---
+
+Dieses Projekt basiert auf React + Vite.
