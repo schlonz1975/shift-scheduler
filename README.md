@@ -1,5 +1,8 @@
 # Team Schichtplaner
 
+## TODO:
+Persistent machen, Accountmanagement, besseres Layout
+
 Ein moderner, responsiver Schichtplaner für Teams. Die App ermöglicht das einfache Verwalten, Bearbeiten und Anzeigen von Schichtplänen in einer übersichtlichen Tabellenansicht. Unterstützt Drag-and-Drop für Teammitglieder, individuelle Schichteingaben und ist komplett auf Deutsch lokalisiert.
 
 ## Features
