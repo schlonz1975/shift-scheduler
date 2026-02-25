@@ -346,11 +346,11 @@ function App() {
               width: "100%",
               borderCollapse: "separate",
               borderSpacing: 0,
-              background: "#f6f8fa",
-              borderRadius: 12,
-              boxShadow: "0 2px 12px #0001",
+              background: "#232936",
+              borderRadius: 16,
+              boxShadow: "0 4px 32px #000a",
               overflow: "hidden",
-              border: "1px solid #e0e4ea",
+              border: "1px solid #232936",
             }}
           >
             <thead>
@@ -360,9 +360,9 @@ function App() {
                     minWidth: 80,
                     maxWidth: 120,
                     width: 80,
-                    background: "#1976d2",
-                    color: "#fff",
-                    border: "1px solid #e0e4ea",
+                    background: "#232936",
+                    color: "#bfc7d5",
+                    border: "1px solid #232936",
                     fontWeight: 700,
                     fontSize: 16,
                     padding: 12,
@@ -402,17 +402,17 @@ function App() {
                                   maxWidth: colWidth,
                                   width: colWidth,
                                   background: snapshot.isDragging
-                                    ? "#1565c0"
-                                    : "#2196f3",
-                                  color: "#fff",
-                                  border: "1px solid #e0e4ea",
+                                    ? "#2d3a53"
+                                    : "#232936",
+                                  color: "#bfc7d5",
+                                  border: "1px solid #232936",
                                   fontWeight: 700,
                                   fontSize: 16,
                                   padding: 12,
                                   letterSpacing: 1,
                                   textAlign: "center",
                                   boxShadow: snapshot.isDragging
-                                    ? "0 2px 8px #1976d244"
+                                    ? "0 2px 8px #23293688"
                                     : undefined,
                                   transition: "background 0.2s",
                                   position: "relative",
@@ -465,19 +465,19 @@ function App() {
               {weekDates.map((date, idx) => (
                 <tr
                   key={date.format("YYYY-MM-DD")}
-                  style={{ background: idx % 2 === 0 ? "#fff" : "#f6f8fa" }}
+                  style={{ background: idx % 2 === 0 ? "#232936" : "#181c24" }}
                 >
                   <td
                     style={{
-                      border: "1px solid #e0e4ea",
+                      border: "1px solid #232936",
                       padding: 12,
                       fontWeight: 600,
-                      background: "#e3eafc",
+                      background: "#232936",
                       minWidth: 80,
                       maxWidth: 120,
                       width: 80,
                       height: 48,
-                      color: "#222",
+                      color: "#bfc7d5",
                       fontSize: 15,
                     }}
                   >
@@ -492,7 +492,7 @@ function App() {
                       <td
                         key={member}
                         style={{
-                          border: "1px solid #e0e4ea",
+                          border: "1px solid #232936",
                           minWidth: colWidth,
                           maxWidth: colWidth,
                           width: colWidth,
@@ -500,19 +500,19 @@ function App() {
                           whiteSpace: "nowrap",
                           textOverflow: "ellipsis",
                           height: 48,
-                          background: isEditing ? "#e3f2fd" : "#fff",
-                          color: "#222",
+                          background: isEditing ? "#2d3a53" : "#181c24",
+                          color: "#bfc7d5",
                           fontSize: 15,
                           cursor: "pointer",
                           transition: "background 0.2s",
                         }}
                         onMouseOver={(e) =>
-                          (e.currentTarget.style.background = "#f0f7ff")
+                          (e.currentTarget.style.background = "#232936")
                         }
                         onMouseOut={(e) =>
                           (e.currentTarget.style.background = isEditing
-                            ? "#e3f2fd"
-                            : "#fff")
+                            ? "#2d3a53"
+                            : "#181c24")
                         }
                       >
                         <span
@@ -531,7 +531,7 @@ function App() {
                               overflow: "hidden",
                               whiteSpace: "nowrap",
                               textOverflow: "ellipsis",
-                              color: "#222",
+                              color: "#bfc7d5",
                               fontWeight: 500,
                             }}
                             onClick={() => {
@@ -548,7 +548,7 @@ function App() {
                                   ?.value || shiftValue,
                               )
                             ) : (
-                              <span style={{ color: "#bbb" }}>–</span>
+                              <span style={{ color: "#444a" }}>–</span>
                             )}
                           </Typography>
                           {shiftValue && (
