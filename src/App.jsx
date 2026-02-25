@@ -19,11 +19,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import deLocale from "@fullcalendar/core/locales/de";
 import moment from "moment";
 import "moment/locale/de";
 
@@ -59,7 +54,11 @@ function App() {
   const [customShift, setCustomShift] = React.useState("");
   const [team, setTeam] = React.useState(defaultTeam);
   const [selectedMember, setSelectedMember] = React.useState(team[0]);
-  const [events, setEvents] = React.useState([]);
+  const [events, setEvents] = React.useState([]); // [{date, member, shift}]
+  const [selectedWeek, setSelectedWeek] = React.useState(
+    moment().startOf("isoWeek"),
+  );
+  const [editCell, setEditCell] = React.useState({ date: null, member: null });
 
   const handleAddCustomShift = () => {
     if (customShift && !shiftList.some((s) => s.label === customShift)) {
@@ -68,24 +67,41 @@ function App() {
     }
   };
 
-  // Handle date click to add/edit shift
-  const handleDateClick = (info) => {
-    // Only allow Monday-Friday
-    const day = moment(info.date).isoWeekday();
-    if (day > 5) return;
-    // Add event for selected member and shift
-    setEvents((prev) => [
-      ...prev.filter(
+  // Get dates for Mon-Fri of selected week
+  const weekDates = Array.from({ length: 5 }, (_, i) =>
+    moment(selectedWeek).add(i, "days"),
+  );
+
+  // Get shift for a member on a date
+  const getShift = (date, member) => {
+    const found = events.find(
+      (ev) => ev.date === date.format("YYYY-MM-DD") && ev.member === member,
+    );
+    return found ? found.shift : "";
+  };
+
+  // Set shift for a member on a date
+  const setShift = (date, member, shift) => {
+    setEvents((prev) => {
+      const filtered = prev.filter(
         (ev) =>
-          !(ev.start === info.dateStr && ev.title.startsWith(selectedMember)),
+          !(ev.date === date.format("YYYY-MM-DD") && ev.member === member),
+      );
+      if (!shift) return filtered;
+      return [...filtered, { date: date.format("YYYY-MM-DD"), member, shift }];
+    });
+    setEditCell({ date: null, member: null });
+  };
+
+  // Delete shift for a member on a date
+  const deleteShift = (date, member) => {
+    setEvents((prev) =>
+      prev.filter(
+        (ev) =>
+          !(ev.date === date.format("YYYY-MM-DD") && ev.member === member),
       ),
-      {
-        title: `${selectedMember}: ${shiftList.find((s) => s.value === selectedShift)?.label || selectedShift}`,
-        start: info.dateStr,
-        allDay: true,
-        extendedProps: { member: selectedMember, shift: selectedShift },
-      },
-    ]);
+    );
+    setEditCell({ date: null, member: null });
   };
 
   return (
@@ -165,31 +181,189 @@ function App() {
               border: "1px solid #ddd",
               borderRadius: 2,
               p: 2,
-              minHeight: 500,
+              minHeight: 300,
               bgcolor: "#fafafa",
+              overflowX: "auto",
             }}
           >
-            <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              locale={deLocale}
-              firstDay={1}
-              weekends={false}
-              events={events}
-              dateClick={handleDateClick}
-              height={500}
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "",
-              }}
-              dayHeaderFormat={{
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-              }}
-              dayMaxEvents={2}
-            />
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Schichtplan (Woche ab {moment(selectedWeek).format("DD.MM.YYYY")})
+            </Typography>
+            <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={() =>
+                  setSelectedWeek(moment(selectedWeek).subtract(1, "week"))
+                }
+              >
+                Vorherige Woche
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() =>
+                  setSelectedWeek(moment(selectedWeek).add(1, "week"))
+                }
+              >
+                Nächste Woche
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setSelectedWeek(moment().startOf("isoWeek"))}
+              >
+                Diese Woche
+              </Button>
+            </Box>
+            <Box
+              component="table"
+              sx={{ width: "100%", borderCollapse: "collapse" }}
+            >
+              <Box component="thead">
+                <Box component="tr">
+                  <Box
+                    component="th"
+                    sx={{
+                      border: "1px solid #ccc",
+                      p: 1,
+                      minWidth: 120,
+                      bgcolor: "#f0f0f0",
+                    }}
+                  >
+                    Datum
+                  </Box>
+                  {team.map((member) => (
+                    <Box
+                      component="th"
+                      key={member}
+                      sx={{
+                        border: "1px solid #ccc",
+                        p: 1,
+                        minWidth: 120,
+                        bgcolor: "#f0f0f0",
+                      }}
+                    >
+                      {member}
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+              <Box component="tbody">
+                {weekDates.map((date) => (
+                  <Box component="tr" key={date.format("YYYY-MM-DD")}>
+                    <Box
+                      component="td"
+                      sx={{
+                        border: "1px solid #ccc",
+                        p: 1,
+                        fontWeight: 600,
+                        bgcolor: "#f9f9f9",
+                      }}
+                    >
+                      {date.format("dddd, DD.MM.YYYY")}
+                    </Box>
+                    {team.map((member) => {
+                      const isEditing =
+                        editCell.date === date.format("YYYY-MM-DD") &&
+                        editCell.member === member;
+                      const shiftValue = getShift(date, member);
+                      return (
+                        <Box
+                          component="td"
+                          key={member}
+                          sx={{
+                            border: "1px solid #ccc",
+                            p: 1,
+                            textAlign: "center",
+                            bgcolor: isEditing ? "#e3f2fd" : undefined,
+                          }}
+                        >
+                          {isEditing ? (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <FormControl size="small" sx={{ minWidth: 120 }}>
+                                <Select
+                                  value={shiftValue || ""}
+                                  onChange={(e) =>
+                                    setShift(date, member, e.target.value)
+                                  }
+                                  displayEmpty
+                                >
+                                  <MenuItem value="">
+                                    <em>Keine</em>
+                                  </MenuItem>
+                                  {shiftList.map((shift) => (
+                                    <MenuItem
+                                      key={shift.value}
+                                      value={shift.value}
+                                    >
+                                      {shift.label}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                              <Button
+                                color="error"
+                                size="small"
+                                onClick={() => deleteShift(date, member)}
+                              >
+                                Löschen
+                              </Button>
+                              <Button
+                                size="small"
+                                onClick={() =>
+                                  setEditCell({ date: null, member: null })
+                                }
+                              >
+                                Abbrechen
+                              </Button>
+                            </Box>
+                          ) : (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Typography
+                                sx={{ flexGrow: 1, cursor: "pointer" }}
+                                onClick={() =>
+                                  setEditCell({
+                                    date: date.format("YYYY-MM-DD"),
+                                    member,
+                                  })
+                                }
+                              >
+                                {shiftValue ? (
+                                  shiftList.find((s) => s.value === shiftValue)
+                                    ?.label
+                                ) : (
+                                  <span style={{ color: "#bbb" }}>–</span>
+                                )}
+                              </Typography>
+                              {shiftValue && (
+                                <Button
+                                  color="error"
+                                  size="small"
+                                  onClick={() => deleteShift(date, member)}
+                                >
+                                  Löschen
+                                </Button>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
           </Box>
         </Container>
       </LocalizationProvider>
