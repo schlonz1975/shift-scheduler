@@ -70,6 +70,42 @@ const defaultTeam = [
 ];
 
 function App() {
+  // State for add/edit member dialogs
+  const [addMemberOpen, setAddMemberOpen] = React.useState(false);
+  const [editMemberIdx, setEditMemberIdx] = React.useState(null);
+  const [memberNameInput, setMemberNameInput] = React.useState("");
+
+  // Add member handler
+  const handleAddMember = () => {
+    const name = memberNameInput.trim();
+    if (name && !team.includes(name)) {
+      setTeam([...team, name]);
+      setMemberNameInput("");
+      setAddMemberOpen(false);
+    }
+  };
+
+  // Edit member handler
+  const handleEditMember = () => {
+    const name = memberNameInput.trim();
+    if (name && !team.includes(name)) {
+      setTeam(team.map((m, i) => (i === editMemberIdx ? name : m)));
+      setEvents(
+        events.map((e) =>
+          e.member === team[editMemberIdx] ? { ...e, member: name } : e,
+        ),
+      );
+      setMemberNameInput("");
+      setEditMemberIdx(null);
+    }
+  };
+
+  // Delete member handler
+  const handleDeleteMember = (idx) => {
+    const member = team[idx];
+    setTeam(team.filter((_, i) => i !== idx));
+    setEvents(events.filter((e) => e.member !== member));
+  };
   // All useState hooks at the top
   const [shiftList, setShiftList] = React.useState(defaultShifts);
   const [selectedShift, setSelectedShift] = React.useState("8-16");
@@ -128,7 +164,108 @@ function App() {
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="de">
         <Container>
-          {/* Shift Edit Dialog */}
+          {/* Add Member Dialog */}
+          <Dialog open={addMemberOpen} onClose={() => setAddMemberOpen(false)}>
+            <DialogTitle>Mitglied hinzufügen</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Name"
+                fullWidth
+                value={memberNameInput}
+                onChange={(e) => setMemberNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddMember();
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setAddMemberOpen(false)}>Abbrechen</Button>
+              <Button onClick={handleAddMember} variant="contained">
+                Hinzufügen
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit Member Dialog */}
+          <Dialog
+            open={editMemberIdx !== null}
+            onClose={() => setEditMemberIdx(null)}
+          >
+            <DialogTitle>Mitglied bearbeiten</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Name"
+                fullWidth
+                value={memberNameInput}
+                onChange={(e) => setMemberNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleEditMember();
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditMemberIdx(null)}>Abbrechen</Button>
+              <Button onClick={handleEditMember} variant="contained">
+                Speichern
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Week Navigation & Add Member */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 2,
+              mb: 2,
+              mt: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={() =>
+                  setSelectedWeek((prev) =>
+                    moment(prev).subtract(1, "week").startOf("isoWeek"),
+                  )
+                }
+              >
+                Vorherige Woche
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setSelectedWeek(moment().startOf("isoWeek"))}
+              >
+                Diese Woche
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() =>
+                  setSelectedWeek((prev) =>
+                    moment(prev).add(1, "week").startOf("isoWeek"),
+                  )
+                }
+              >
+                Nächste Woche
+              </Button>
+            </Box>
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={() => {
+                setAddMemberOpen(true);
+                setMemberNameInput("");
+              }}
+            >
+              + Mitglied
+            </Button>
+          </Box>
           <Dialog
             open={!!editCell.date}
             onClose={() => setEditCell({ date: null, member: null })}
@@ -278,10 +415,41 @@ function App() {
                                     ? "0 2px 8px #1976d244"
                                     : undefined,
                                   transition: "background 0.2s",
+                                  position: "relative",
                                   ...provided.draggableProps.style,
                                 }}
                               >
-                                {member}
+                                <span
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 6,
+                                  }}
+                                >
+                                  {member}
+                                  <Button
+                                    size="small"
+                                    sx={{ minWidth: 0, color: "#fff", ml: 1 }}
+                                    onClick={() => {
+                                      setEditMemberIdx(idx);
+                                      setMemberNameInput(member);
+                                    }}
+                                  >
+                                    <span role="img" aria-label="edit">
+                                      ✎
+                                    </span>
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    sx={{ minWidth: 0, color: "#fff" }}
+                                    onClick={() => handleDeleteMember(idx)}
+                                  >
+                                    <span role="img" aria-label="delete">
+                                      🗑️
+                                    </span>
+                                  </Button>
+                                </span>
                               </th>
                             )}
                           </Draggable>
