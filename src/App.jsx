@@ -163,7 +163,34 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="de">
-        <Container>
+        <Container maxWidth="md" sx={{ mt: 1, mb: 4 }}>
+          {/* Website Headline */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              minHeight: "8vh",
+              mb: 1,
+            }}
+          >
+            <Typography
+              variant="h2"
+              component="h1"
+              sx={{
+                color: "#fff",
+                fontWeight: 700,
+                letterSpacing: 2,
+                mb: 1,
+                mt: 1,
+                textAlign: "center",
+                textShadow: "0 2px 16px #000a",
+              }}
+            >
+              Team Schichtplaner
+            </Typography>
+          </Box>
           {/* Add Member Dialog */}
           <Dialog open={addMemberOpen} onClose={() => setAddMemberOpen(false)}>
             <DialogTitle>Mitglied hinzufügen</DialogTitle>
