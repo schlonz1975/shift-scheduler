@@ -213,6 +213,7 @@ function App() {
               borderRadius: 12,
               boxShadow: "0 2px 12px #0001",
               overflow: "hidden",
+              border: "1px solid #e0e4ea",
             }}
           >
             <thead>
@@ -224,7 +225,7 @@ function App() {
                     width: 80,
                     background: "#1976d2",
                     color: "#fff",
-                    border: "none",
+                    border: "1px solid #e0e4ea",
                     fontWeight: 700,
                     fontSize: 16,
                     padding: 12,
@@ -267,7 +268,7 @@ function App() {
                                     ? "#1565c0"
                                     : "#2196f3",
                                   color: "#fff",
-                                  border: "none",
+                                  border: "1px solid #e0e4ea",
                                   fontWeight: 700,
                                   fontSize: 16,
                                   padding: 12,
@@ -300,7 +301,7 @@ function App() {
                 >
                   <td
                     style={{
-                      border: "none",
+                      border: "1px solid #e0e4ea",
                       padding: 12,
                       fontWeight: 600,
                       background: "#e3eafc",
@@ -323,7 +324,7 @@ function App() {
                       <td
                         key={member}
                         style={{
-                          border: "none",
+                          border: "1px solid #e0e4ea",
                           minWidth: colWidth,
                           maxWidth: colWidth,
                           width: colWidth,
