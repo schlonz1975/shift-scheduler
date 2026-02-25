@@ -67,6 +67,14 @@ function App() {
     }
   };
 
+  // Always use German weekdays, Monday to Friday
+  const germanWeekdays = [
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+  ];
   // Get dates for Mon-Fri of selected week
   const weekDates = Array.from({ length: 5 }, (_, i) =>
     moment(selectedWeek).add(i, "days"),
@@ -115,7 +123,10 @@ function App() {
             </Typography>
           </Toolbar>
         </AppBar>
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container
+          maxWidth={false}
+          sx={{ mt: 4, width: "100vw", maxWidth: "100vw", p: 0 }}
+        >
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6}>
               <Autocomplete
@@ -184,6 +195,10 @@ function App() {
               minHeight: 300,
               bgcolor: "#fafafa",
               overflowX: "auto",
+              width: "100vw",
+              maxWidth: "100vw",
+              height: "70vh",
+              overflowY: "auto",
             }}
           >
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -215,7 +230,10 @@ function App() {
             </Box>
             <Box
               component="table"
-              sx={{ width: "100%", borderCollapse: "collapse" }}
+              sx={{
+                minWidth: team.length * 140 + 120,
+                borderCollapse: "collapse",
+              }}
             >
               <Box component="thead">
                 <Box component="tr">
@@ -247,7 +265,7 @@ function App() {
                 </Box>
               </Box>
               <Box component="tbody">
-                {weekDates.map((date) => (
+                {weekDates.map((date, idx) => (
                   <Box component="tr" key={date.format("YYYY-MM-DD")}>
                     <Box
                       component="td"
@@ -256,9 +274,10 @@ function App() {
                         p: 1,
                         fontWeight: 600,
                         bgcolor: "#f9f9f9",
+                        minWidth: 160,
                       }}
                     >
-                      {date.format("dddd, DD.MM.YYYY")}
+                      {germanWeekdays[idx]}, {date.format("DD.MM.YYYY")}
                     </Box>
                     {team.map((member) => {
                       const isEditing =
